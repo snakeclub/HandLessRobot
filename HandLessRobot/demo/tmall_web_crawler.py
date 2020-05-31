@@ -38,7 +38,7 @@ class MyRobot(object):
     # 构造函数
     #############################
     def __init__(self, url: str, sub_name: str, save_path: str,
-                 parallel_num: int = 5, global_wait_time: float = 0.5, auto_redo: bool = True,
+                 parallel_num: int = 5, global_wait_time: float = 0.5, auto_redo: bool = False,
                  page_down_times: int = 5, pic_down_overtime: float = 60.0,
                  force_update: bool = False,
                  chrome_bin_path: str = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -54,7 +54,7 @@ class MyRobot(object):
         @param {str} save_path - 保存目录
         @param {int} parallel_num=5 - 并发打开页面的数量
         @param {float} global_wait_time=0.5 - 全局操作间歇等待时长设置
-        @param {bool} auto_redo=True - 失败是否自动重处理
+        @param {bool} auto_redo=False - 失败是否自动重处理
         @param {int} page_down_times=5 - 每个页面按下翻页的次数
         @param {float} pic_down_overtime = 60.0 - 图片下载超时时间，默认1分钟
         @param {bool} force_update=False - 是否强制重新更新商品清单
@@ -114,7 +114,9 @@ class MyRobot(object):
         运行机器人
         """
         # 先做完成状态的判断
-        if self.url != self._down_info['url']:
+        if self.url == '':
+            self.url = self._down_info['url']
+        elif self.url != self._down_info['url']:
             if self._down_info['status'] == 'list':
                 # 上一url还在解析商品信息，不应处理新的url
                 print('Last url is listing, please add new url after this done!')
@@ -144,6 +146,11 @@ class MyRobot(object):
         _robot = Robot(use_action_types=['winuia'], ignore_version=True)
         self._robot_info = _robot.robot_info
 
+        # 设置环境
+        WindowsChromeAction.chrome_para_set_find_step_tag(
+            _robot.robot_info, '', 'win7+64+chrome83'
+        )
+
         # 启动Chrome浏览器
         self._chrome = WindowsChromeAction.get_chrome_window(
             _robot.robot_info, 'get_chrome_window', bin_path=self.chrome_bin_path,
@@ -154,6 +161,12 @@ class MyRobot(object):
         WindowsAction.common_attr_call(
             _robot.robot_info, 'WINDOW_SET_FOREGROUND', self._chrome
         )
+
+        # 测试代码
+        time.sleep(1)
+        Window.print_window_info(self._chrome, to_json_str=True,
+                                 print_to_file='d:/test.json')
+        return
 
         # 处理产品清单的获取
         if not self._get_product_list():

@@ -35,6 +35,50 @@ __AUTHOR__ = u'黎慧剑'  # 作者
 __PUBLISH__ = '2020.05.22'  # 发布日期
 
 
+# 已经验证的控件查找配置
+DEFAULT_FIND_STEPS = {
+    'win7+64+chrome83': {
+        'GET_TABS': [
+            {'options': {'name': 'Google Chrome'}},
+            {'pos': 1, 'options': {}},
+            {'pos': 0},
+            {'pos': 0, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0, 'options': {'control_type': ControlType.TabControl}},
+        ],
+        'GET_URL_EDITER': [
+            {'by_step': False, 'options': {'name': '地址和搜索栏', 'control_type': ControlType.EditControl}},
+        ],
+        'GET_EXTENSION': [
+            {'by_step': False, 'options': {'control_type': ControlType.CustomControl, 'name': '扩展程序', 'depth': 5}},
+        ],
+    },
+    'win10+64+chrome83': {
+        'GET_TABS': [
+            {'options': {'name': 'Google Chrome'}},
+            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0},
+            {'pos': 0, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0, 'options': {'control_type': ControlType.TabControl}},
+        ],
+        'GET_URL_EDITER': [
+            {'options': {'name': 'Google Chrome'}},
+            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0},
+            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0, 'options': {'control_type': ControlType.GroupControl}},
+            {'pos': 0, 'options': {'name': '地址和搜索栏', 'control_type': ControlType.EditControl}}
+        ],
+        'GET_EXTENSION': [
+            {'options': {'name': 'Google Chrome'}},
+            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0},
+            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
+            {'pos': 0, 'options': {'control_type': ControlType.GroupControl, 'name': '扩展程序'}},
+        ],
+    }
+}
+
+
 class WindowsChromeAction(BaseAction):
     """
     Chrome浏览器的动作模块(Windows平台)
@@ -110,6 +154,32 @@ class WindowsChromeAction(BaseAction):
         @param {float} value - 要设置的参数，单位秒2秒
         """
         RunTool.set_global_var('CHROME_ACTION_PARA_WAIT_LESS_TIMEOUT', value)
+
+    @classmethod
+    def chrome_para_get_find_step_tag(cls, robot_info: dict, action_name: str,
+                                      **kwargs) -> str:
+        """
+        获取参数值 - 控件查找类型标志
+        注：该参数定义了不同操作系统查找chrome控件的配置
+
+        @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
+        @param {str} action_name - 通用参数，调用时默认传入的动作名
+
+        @returns {str} - 控件查找类型标志
+        """
+        return cls._get_global_var_default('CHROME_ACTION_PARA_FIND_STEPS_TAG', 'win10+64+chrome83')
+
+    @classmethod
+    def chrome_para_set_find_step_tag(cls, robot_info: dict, action_name: str, value: float,
+                                      **kwargs) -> float:
+        """
+        获取参数值 - 控件查找类型标志
+
+        @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
+        @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {float} value - 要设置的参数
+        """
+        RunTool.set_global_var('CHROME_ACTION_PARA_FIND_STEPS_TAG', value)
 
     #############################
     # 应用启动关闭
@@ -234,14 +304,10 @@ class WindowsChromeAction(BaseAction):
 
         @returns {winuia.WindowControlSpec} - 地址栏编辑框对象
         """
-        _find_steps = [
-            {'options': {'name': 'Google Chrome'}},
-            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
-            {'pos': 0},
-            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
-            {'pos': 0, 'options': {'control_type': ControlType.GroupControl}},
-            {'pos': 0, 'options': {'name': name, 'control_type': ControlType.EditControl}}
-        ]
+        FIND_STEPS_TAG = cls._get_global_var_default(
+            'CHROME_ACTION_PARA_FIND_STEPS_TAG', 'win10+64+chrome83'
+        )
+        _find_steps = DEFAULT_FIND_STEPS[FIND_STEPS_TAG]['GET_URL_EDITER']
 
         # 获取地址栏编辑框
         return cls._wait_less_run_fun(
@@ -292,14 +358,12 @@ class WindowsChromeAction(BaseAction):
 
         @returns {list} - 页签对象清单
             注：最后一个页签对象是新建页签按钮，使用时需注意
+
         """
-        _find_steps = [
-            {'options': {'name': 'Google Chrome'}},
-            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
-            {'pos': 0},
-            {'pos': 0, 'options': {'control_type': ControlType.PaneControl}},
-            {'pos': 0, 'options': {'control_type': ControlType.TabControl}},
-        ]
+        FIND_STEPS_TAG = cls._get_global_var_default(
+            'CHROME_ACTION_PARA_FIND_STEPS_TAG', 'win10+64+chrome83'
+        )
+        _find_steps = DEFAULT_FIND_STEPS[FIND_STEPS_TAG]['GET_TABS']
 
         # 获取页签对象
         _tabs = cls._wait_less_run_fun(
@@ -690,35 +754,27 @@ class WindowsChromeAction(BaseAction):
 
         @returns {WindowControlSpec} - 返回插件窗口对象
         """
-
-        _find_steps = [
-            {'options': {'name': 'Google Chrome'}},
-            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
-            {'pos': 0},
-            {'pos': 1, 'options': {'control_type': ControlType.PaneControl}},
-            {'pos': 0, 'options': {'control_type': ControlType.GroupControl, 'name': group_name}},
-        ]
+        FIND_STEPS_TAG = cls._get_global_var_default(
+            'CHROME_ACTION_PARA_FIND_STEPS_TAG', 'win10+64+chrome83'
+        )
+        _find_steps = DEFAULT_FIND_STEPS[FIND_STEPS_TAG]['GET_EXTENSION']
 
         _ext_group = cls._wait_less_run_fun(
             winuia.Window.find_window_ex, {}, _find_steps, parent=chrome_win
         )
 
         _exts = _ext_group.get_childrens()
-        _ext_count = len(_exts) - 2
 
         # 开始获取扩展程序对象
         _find_ext = None
         if name_with is None:
-            if index < _ext_count:
-                _find_ext = _exts[index]
+            _find_ext = _exts[index]
         else:
             _current_index = 0
-            while _current_index < _ext_count:
-                if _exts[_current_index].name.find(name_with) != -1:
-                    _find_ext = _exts[_current_index]
+            for _ext in _exts:
+                if _ext.name.find(name_with) != -1 and _ext.control_type == ControlType.ButtonControl:
+                    _find_ext = _ext
                     break
-
-                _current_index += 1
 
         # 返回结果
         if _find_ext is None:

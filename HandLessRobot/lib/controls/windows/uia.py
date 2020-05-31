@@ -111,38 +111,41 @@ class Window(base_control.Window):
             _pids = psutil.pids()
             for _pid in _pids:
                 _process = ApplicationSpec(process=_pid)
+                try:
+                    if 'name' in kwargs.keys():
+                        if kwargs['name'] != _process.name:
+                            continue
 
-                if 'name' in kwargs.keys():
-                    if kwargs['name'] != _process.name:
-                        continue
+                    if 'bin_path' in kwargs.keys():
+                        if kwargs['bin_path'] != _process.bin_path:
+                            continue
 
-                if 'bin_path' in kwargs.keys():
-                    if kwargs['bin_path'] != _process.bin_path:
-                        continue
+                    if 'work_path' in kwargs.keys():
+                        if kwargs['work_path'] != _process.work_path:
+                            continue
 
-                if 'work_path' in kwargs.keys():
-                    if kwargs['work_path'] != _process.work_path:
-                        continue
+                    if 'cmdline_para' in kwargs.keys():
+                        if kwargs['cmdline_para'] not in _process.cmdline:
+                            continue
 
-                if 'cmdline_para' in kwargs.keys():
-                    if kwargs['cmdline_para'] not in _process.cmdline:
-                        continue
+                    if 'parent_pid' in kwargs.keys():
+                        if kwargs['parent_pid'] != _process.parent_pid:
+                            continue
 
-                if 'parent_pid' in kwargs.keys():
-                    if kwargs['parent_pid'] != _process.parent_pid:
-                        continue
+                    if 'children_num' in kwargs.keys():
+                        if kwargs['children_num'] != len(_process.childrens):
+                            continue
 
-                if 'children_num' in kwargs.keys():
-                    if kwargs['children_num'] != len(_process.childrens):
-                        continue
+                    if 'children_num_less' in kwargs.keys():
+                        if kwargs['children_num_less'] <= len(_process.childrens):
+                            continue
 
-                if 'children_num_less' in kwargs.keys():
-                    if kwargs['children_num_less'] <= len(_process.childrens):
-                        continue
-
-                if 'children_num_more' in kwargs.keys():
-                    if kwargs['children_num_more'] >= len(_process.childrens):
-                        continue
+                    if 'children_num_more' in kwargs.keys():
+                        if kwargs['children_num_more'] >= len(_process.childrens):
+                            continue
+                except:
+                    # 有可能出现权限问题，如果有直接返回不匹配
+                    continue
 
                 _app_list.append(_process)
                 if not kwargs['muti_search']:
@@ -305,6 +308,7 @@ class Window(base_control.Window):
             [
                 # step 1
                 {
+                    'by_step': True,  # 是否逐步往下查找，Fasle代表搜索上一步的所有子对象
                     'pos': 0, # 取查找结果的第几个(0开始)
                     'options': {  # 窗口匹配条件，支持的参数参考find_window
                         ...
@@ -336,22 +340,36 @@ class Window(base_control.Window):
                 _win_obj = _win_obj.GetFirstChildControl()
                 _has_find_first = True
             else:
-                _childrens = _win_obj.GetChildren()
-                if 'options' in _step.keys():
-                    # 需要按条件判断
-                    _temp_list = []
-                    for _children in _childrens:
-                        _win_spec = WindowControlSpec(win_object=_children)
-                        if cls._is_window_match(_win_spec, _step['options']):
-                            # 匹配上对象，添加到临时队列中
-                            _temp_list.append(_children)
+                if 'by_step' in _step.keys() and not _step['by_step']:
+                    # 搜索所有子对象
+                    _options = copy.deepcopy(_step['options'])
+                    _options['parent'] = WindowControlSpec(win_object=_win_obj)
+                    _options['muti_search'] = True
+                    _childrens = []
+                    for _win_spec in cls.find_window(**_options):
+                        _childrens.append(_win_spec.automation_control)
+                else:
+                    # 搜索下一级
+                    _childrens = _win_obj.GetChildren()
+                    if 'options' in _step.keys():
+                        # 需要按条件判断
+                        _temp_list = []
+                        for _children in _childrens:
+                            _win_spec = WindowControlSpec(win_object=_children)
+                            if cls._is_window_match(_win_spec, _step['options']):
+                                # 匹配上对象，添加到临时队列中
+                                _temp_list.append(_children)
 
-                    # 更新回_childrens中
-                    _childrens = _temp_list
+                        # 更新回_childrens中
+                        _childrens = _temp_list
 
                 # 看找第几个
                 if 'pos' in _step.keys():
-                    _win_obj = _childrens[_step['pos']]
+                    try:
+                        _win_obj = _childrens[_step['pos']]
+                    except:
+                        print('find_window_ex error: {0}'.format(_step))
+                        raise
                 else:
                     _win_obj = _childrens[0]
 
