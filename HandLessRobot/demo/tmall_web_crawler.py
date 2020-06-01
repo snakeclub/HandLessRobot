@@ -41,6 +41,7 @@ class MyRobot(object):
                  parallel_num: int = 5, global_wait_time: float = 0.5, auto_redo: bool = False,
                  page_down_times: int = 5, pic_down_overtime: float = 60.0,
                  force_update: bool = False,
+                 find_step_tag: str = 'win10+64+chrome83',
                  chrome_bin_path: str = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
                  chrome_download_path: str = 'D:\\download\\',
                  chrome_start_para: list = ['--force-renderer-accessibility'],
@@ -58,6 +59,7 @@ class MyRobot(object):
         @param {int} page_down_times=5 - 每个页面按下翻页的次数
         @param {float} pic_down_overtime = 60.0 - 图片下载超时时间，默认1分钟
         @param {bool} force_update=False - 是否强制重新更新商品清单
+        @param {str} find_step_tag='win10+64+chrome83' - chrome的获取控件配置，也可以选择'win7+64+chrome83'
         @param {str} chrome_bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' - chrome浏览器启动文件
         @param {str} chrome_download_path='D:\\download\\' - 浏览器下载目录
         @param {list} chrome_start_para=['--force-renderer-accessibility'] - 浏览器启动参数
@@ -73,6 +75,7 @@ class MyRobot(object):
         self.page_down_times = page_down_times
         self.pic_down_overtime = pic_down_overtime
         self.force_update = force_update
+        self.find_step_tag = find_step_tag
         self.chrome_bin_path = chrome_bin_path
         self.chrome_download_path = chrome_download_path
         self.chrome_start_para = chrome_start_para
@@ -148,7 +151,7 @@ class MyRobot(object):
 
         # 设置环境
         WindowsChromeAction.chrome_para_set_find_step_tag(
-            _robot.robot_info, '', 'win7+64+chrome83'
+            _robot.robot_info, '', self.find_step_tag
         )
 
         # 启动Chrome浏览器
@@ -163,10 +166,10 @@ class MyRobot(object):
         )
 
         # 测试代码
-        time.sleep(1)
-        Window.print_window_info(self._chrome, to_json_str=True,
-                                 print_to_file='d:/test.json')
-        return
+        # time.sleep(1)
+        # Window.print_window_info(self._chrome, to_json_str=True,
+        #                          print_to_file='d:/test.json')
+        # return
 
         # 处理产品清单的获取
         if not self._get_product_list():
@@ -427,13 +430,22 @@ class MyRobot(object):
             )
 
             # 获取下载按钮
-            _header = Window.find_window(
-                parent=_doc, automation_id='header', control_type=ControlType.GroupControl
-            )
+            _header = None
+            _down_btn = None
+            if self.find_step_tag == 'win7+64+chrome83':
+                # win7的处理方式
+                _down_btn = Window.find_window(
+                    parent=_doc, name='下载', control_type=ControlType.ButtonControl, depth=6
+                )
+            else:
+                # win10的处理方式
+                _header = Window.find_window(
+                    parent=_doc, automation_id='header', control_type=ControlType.GroupControl
+                )
 
-            _down_btn = Window.find_window(
-                parent=_header, name='下载', control_type=ControlType.ButtonControl
-            )
+                _down_btn = Window.find_window(
+                    parent=_header, name='下载', control_type=ControlType.ButtonControl
+                )
 
             _down_btn.automation_control.Click()
 
@@ -441,15 +453,29 @@ class MyRobot(object):
             _is_over_time = False
             _check_time = 0
             while True:
-                _pic_total = Window.find_window(
-                    parent=_header, automation_id='total-num', control_type=ControlType.GroupControl
-                ).get_childrens()[0]
+                if self.find_step_tag == 'win7+64+chrome83':
+                    # win7的处理方式
+                    _pic_total = Window.find_window(
+                        parent=_doc, name_re=r'^已选择 : .*', control_type=ControlType.TextControl, depth=8
+                    )
+                else:
+                    # win10的处理方式
+                    _pic_total = Window.find_window(
+                        parent=_header, automation_id='total-num', control_type=ControlType.GroupControl
+                    ).get_childrens()[0]
                 _pic_total_num = _pic_total.name.replace(
                     '总共 : ', '').replace('/', '').replace(' ', '')
 
-                _pic_down = Window.find_window(
-                    parent=_header, automation_id='downloaded-num', control_type=ControlType.GroupControl
-                ).get_childrens()[0]
+                if self.find_step_tag == 'win7+64+chrome83':
+                    # win7的处理方式
+                    _pic_down = Window.find_window(
+                        parent=_doc, name_re=r'^已下载 : .*', control_type=ControlType.TextControl, depth=8
+                    )
+                else:
+                    # win10的处理方式
+                    _pic_down = Window.find_window(
+                        parent=_header, automation_id='downloaded-num', control_type=ControlType.GroupControl
+                    ).get_childrens()[0]
                 _pic_down_num = _pic_down.name.replace('已下载 : ', '').replace(' ', '')
 
                 if _pic_total_num == _pic_down_num:
@@ -607,9 +633,9 @@ def robot_run(url: str):
         _robot.robot_info, 'chrome_select_tab', _chrome, index=0
     )
 
-    _dom_html = WindowsChromeAction.chrome_get_dom_html(
-        _robot.robot_info, 'chrome_get_dom_html', _chrome
-    )
+    # _dom_html = WindowsChromeAction.chrome_get_dom_html(
+    #     _robot.robot_info, 'chrome_get_dom_html', _chrome
+    # )
 
     print('ok')
 

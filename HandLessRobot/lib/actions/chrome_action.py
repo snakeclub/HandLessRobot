@@ -767,14 +767,25 @@ class WindowsChromeAction(BaseAction):
 
         # 开始获取扩展程序对象
         _find_ext = None
-        if name_with is None:
-            _find_ext = _exts[index]
-        else:
-            _current_index = 0
-            for _ext in _exts:
-                if _ext.name.find(name_with) != -1 and _ext.control_type == ControlType.ButtonControl:
+        _current_index = 0
+        for _ext in _exts:
+            if _ext.control_type != ControlType.ButtonControl:
+                # 非按钮类型不处理
+                continue
+
+            if name_with is None:
+                # 按索引位置获取
+                if _current_index == index:
                     _find_ext = _ext
                     break
+            else:
+                # 按名字匹配
+                if _ext.name.find(name_with) != -1:
+                    _find_ext = _ext
+                    break
+
+            # 继续下一个
+            _current_index += 1
 
         # 返回结果
         if _find_ext is None:
