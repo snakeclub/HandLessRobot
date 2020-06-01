@@ -456,8 +456,9 @@ class MyRobot(object):
                 if self.find_step_tag == 'win7+64+chrome83':
                     # win7的处理方式
                     _pic_total = Window.find_window(
-                        parent=_doc, name_re=r'^已选择 : .*', control_type=ControlType.TextControl, depth=8
+                        parent=_doc, name_re=r'^总共 : .*', control_type=ControlType.TextControl, depth=8
                     )
+                    # print(_pic_total.name)
                 else:
                     # win10的处理方式
                     _pic_total = Window.find_window(
@@ -471,6 +472,7 @@ class MyRobot(object):
                     _pic_down = Window.find_window(
                         parent=_doc, name_re=r'^已下载 : .*', control_type=ControlType.TextControl, depth=8
                     )
+                    # print(_pic_down.name)
                 else:
                     # win10的处理方式
                     _pic_down = Window.find_window(
