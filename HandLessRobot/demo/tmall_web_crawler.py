@@ -421,7 +421,7 @@ class MyRobot(object):
             )
 
             CommonAction.time_wait_global(
-                self._robot_info, 'time_wait_global', multiple=3
+                self._robot_info, 'time_wait_global', multiple=7
             )
 
             # 获取页面
@@ -592,6 +592,9 @@ class MyRobot(object):
                     # 标记存在失败记录
                     _all_done = False
 
+            # 输出剩余数量
+            print('Remain task count: %d' % _task_q.qsize())
+
             # 清空并将下一个产品放进堆栈
             _stack[_index] = ''
             if not _task_q.empty():
@@ -662,6 +665,25 @@ if __name__ == '__main__':
     _url = _args.pop('url', '')
     _sub_name = _args.pop('sub_name', 'test')
     _save_path = _args.pop('save_path', 'd:/auto_down/')
+
+    # 一些值的处理
+    if 'auto_redo' in _args:
+        _args['auto_redo'] = (_args['auto_redo'] == 'True')
+
+    if 'force_update' in _args:
+        _args['force_update'] = (_args['force_update'] == 'True')
+
+    if 'parallel_num' in _args:
+        _args['parallel_num'] = int(_args['parallel_num'])
+
+    if 'page_down_times' in _args:
+        _args['page_down_times'] = int(_args['page_down_times'])
+
+    if 'global_wait_time' in _args:
+        _args['global_wait_time'] = float(_args['global_wait_time'])
+
+    if 'pic_down_overtime' in _args:
+        _args['pic_down_overtime'] = float(_args['pic_down_overtime'])
 
     _robot = MyRobot(
         _url,
