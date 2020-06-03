@@ -46,7 +46,8 @@ DEFAULT_FIND_STEPS = {
             {'pos': 0, 'options': {'control_type': ControlType.TabControl}},
         ],
         'GET_URL_EDITER': [
-            {'by_step': False, 'options': {'name': '地址和搜索栏', 'control_type': ControlType.EditControl}},
+            {'by_step': False, 'options': {'name': '地址和搜索栏',
+                                           'control_type': ControlType.EditControl, 'depth': 6}},
         ],
         'GET_EXTENSION': [
             {'by_step': False, 'options': {'control_type': ControlType.CustomControl, 'name': '扩展程序', 'depth': 5}},
