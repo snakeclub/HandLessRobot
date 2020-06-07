@@ -479,7 +479,7 @@ class MyRobot(object):
                 if self.find_step_tag == 'win7+64+chrome83':
                     # win7的处理方式
                     _pic_total = Window.find_window(
-                        parent=_doc, name_re=r'^总共 : .*', control_type=ControlType.TextControl, depth=8
+                        parent=_doc, name_re=r'^已选择 : .*', control_type=ControlType.TextControl, depth=8
                     )
                     # print(_pic_total.name)
                 else:
@@ -488,7 +488,7 @@ class MyRobot(object):
                         parent=_header, automation_id='total-num', control_type=ControlType.GroupControl
                     ).get_childrens()[0]
                 _pic_total_num = _pic_total.name.replace(
-                    '总共 : ', '').replace('/', '').replace(' ', '')
+                    '已选择 : ', '').replace('/', '').replace(' ', '')
 
                 if self.find_step_tag == 'win7+64+chrome83':
                     # win7的处理方式
