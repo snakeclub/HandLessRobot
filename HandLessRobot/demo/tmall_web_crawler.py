@@ -81,6 +81,12 @@ class MyRobot(object):
         self.chrome_start_para = chrome_start_para
         self.fatkun_dir_name = fatkun_dir_name
 
+        # 判断是淘宝还是天猫
+        self.is_tmall = True
+        _url_info = urlparse(url)
+        if _url_info.netloc.find('.taobao.') >= 0:
+            self.is_tmall = False
+
         # 初始化
         self._chrome: WindowControlSpec = None
         self._robot_info: dict = None
@@ -212,10 +218,20 @@ class MyRobot(object):
         @param {BeautifulSoup} soup - 要解析的dom对象
         """
         _url_info = urlparse(url)
-        _div: PageElement = soup.findAll('div', attrs={'class': 'J_TItems'})[0]
+        _div: PageElement = None
+        if self.is_tmall:
+            _div = soup.findAll('div', attrs={'class': 'J_TItems'})[0]
+        else:
+            # 淘宝
+            _div = soup.findAll('div', attrs={'class': 'shop-hesper-bd'})[0]
+
         _next_url = ''  # 当前页的下一页地址
         for _line in _div.children:
             if _line.name != 'div':
+                continue
+
+            if not self.is_tmall and 'shop-filter' in _line['class']:
+                # 淘宝要跳过这个栏位
                 continue
 
             if 'pagination' in _line['class']:
@@ -281,11 +297,18 @@ class MyRobot(object):
             Keyboard.press('pgdn', presses=self.page_down_times, interval=0.2)
 
             # 获取页面dom代码
+            _check_complete = {
+                'name': 'div', 'attrs': {'class': 'J_TItems'}
+            }
+            if not self.is_tmall:
+                # 淘宝
+                _check_complete = {
+                    'name': 'div', 'attrs': {'class': 'shop-hesper-bd'}
+                }
+
             _dom = WindowsChromeAction.chrome_get_dom_html(
                 self._robot_info, 'chrome_get_dom_html', self._chrome,
-                check_complete={
-                    'name': 'div', 'attrs': {'class': 'J_TItems'}
-                }
+                check_complete=_check_complete
             )
             _soup = BeautifulSoup(_dom, 'html.parser')
 
