@@ -31,7 +31,7 @@ import win32.win32process as win32process
 # 根据当前文件路径将包路径纳入，在非安装的情况下可以引用到
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir)))
-import HandLessRobot.lib.controls.base_control as base_control
+import HandLessRobot.lib.controls.windows_control as base_control
 
 
 __MOUDLE__ = 'windows'  # 模块名
@@ -810,57 +810,57 @@ class WindowControlSpec(base_control.WindowControlSpec):
         """
         return win32gui.GetWindowRect(self.handle)
 
-    @property
-    def v_scroll_range(self) -> tuple:
-        """
-        获取垂直滚动条的取值范围
-        @property {tuple}
-        """
-        _info = win32gui.GetScrollInfo(self.handle, win32con.SB_VERT, win32con.SIF_RANGE)
-        if _info:
-            return (_info[1], _info[2])
-        else:
-            # 没有找到返回(0, 0)
-            return (0, 0)
+    # @property
+    # def v_scroll_range(self) -> tuple:
+    #     """
+    #     获取垂直滚动条的取值范围
+    #     @property {tuple}
+    #     """
+    #     _info = win32gui.GetScrollInfo(self.handle, win32con.SB_VERT, win32con.SIF_RANGE)
+    #     if _info:
+    #         return (_info[1], _info[2])
+    #     else:
+    #         # 没有找到返回(0, 0)
+    #         return (0, 0)
 
-    @property
-    def v_scroll_pos(self) -> int:
-        """
-        获取垂直滚动条的当前位置
-        @property {int}
-        """
-        _info = win32gui.GetScrollInfo(self.handle, win32con.SB_VERT, win32con.SIF_POS)
-        if _info:
-            return _info[4]
-        else:
-            # 没有找到返回0
-            return 0
+    # @property
+    # def v_scroll_pos(self) -> int:
+    #     """
+    #     获取垂直滚动条的当前位置
+    #     @property {int}
+    #     """
+    #     _info = win32gui.GetScrollInfo(self.handle, win32con.SB_VERT, win32con.SIF_POS)
+    #     if _info:
+    #         return _info[4]
+    #     else:
+    #         # 没有找到返回0
+    #         return 0
 
-    @property
-    def h_scroll_range(self) -> tuple:
-        """
-        获取水平滚动条的取值范围
-        @property {tuple}
-        """
-        _info = win32gui.GetScrollInfo(self.handle, win32con.SB_HORZ, win32con.SIF_RANGE)
-        if _info:
-            return (_info[1], _info[2])
-        else:
-            # 没有找到返回(0, 0)
-            return (0, 0)
+    # @property
+    # def h_scroll_range(self) -> tuple:
+    #     """
+    #     获取水平滚动条的取值范围
+    #     @property {tuple}
+    #     """
+    #     _info = win32gui.GetScrollInfo(self.handle, win32con.SB_HORZ, win32con.SIF_RANGE)
+    #     if _info:
+    #         return (_info[1], _info[2])
+    #     else:
+    #         # 没有找到返回(0, 0)
+    #         return (0, 0)
 
-    @property
-    def h_scroll_pos(self) -> int:
-        """
-        获取水平滚动条的当前位置
-        @property {int}
-        """
-        _info = win32gui.GetScrollInfo(self.handle, win32con.SB_HORZ, win32con.SIF_POS)
-        if _info:
-            return _info[4]
-        else:
-            # 没有找到返回0
-            return 0
+    # @property
+    # def h_scroll_pos(self) -> int:
+    #     """
+    #     获取水平滚动条的当前位置
+    #     @property {int}
+    #     """
+    #     _info = win32gui.GetScrollInfo(self.handle, win32con.SB_HORZ, win32con.SIF_POS)
+    #     if _info:
+    #         return _info[4]
+    #     else:
+    #         # 没有找到返回0
+    #         return 0
 
     #############################
     # 窗口遍历
@@ -985,63 +985,63 @@ class WindowControlSpec(base_control.WindowControlSpec):
     #############################
     # 窗口操作 - 滚动条
     #############################
-    def v_scroll_to(self, pos: int) -> int:
-        """
-        滚动垂直滚动条到指定位置
+    # def v_scroll_to(self, pos: int) -> int:
+    #     """
+    #     滚动垂直滚动条到指定位置
 
-        @param {int} pos - 要滚动到的位置
+    #     @param {int} pos - 要滚动到的位置
 
-        @returns {int} - 设置后的当前位置
-        """
-        return win32gui.SetScrollInfo(
-            self.handle,
-            (win32con.SB_VERT, 0, 0, 0, pos, 0)
-        )
+    #     @returns {int} - 设置后的当前位置
+    #     """
+    #     return win32gui.SetScrollInfo(
+    #         self.handle,
+    #         (win32con.SB_VERT, 0, 0, 0, pos, 0)
+    #     )
 
-    def v_scroll_to_head(self) -> int:
-        """
-        滚动垂直滚动条到开头
+    # def v_scroll_to_head(self) -> int:
+    #     """
+    #     滚动垂直滚动条到开头
 
-        @returns {int} - 设置后的当前位置
-        """
-        return self.v_scroll_to(0)
+    #     @returns {int} - 设置后的当前位置
+    #     """
+    #     return self.v_scroll_to(0)
 
-    def v_scroll_to_end(self) -> int:
-        """
-        滚动垂直滚动条到最后
+    # def v_scroll_to_end(self) -> int:
+    #     """
+    #     滚动垂直滚动条到最后
 
-        @returns {int} - 设置后的当前位置
-        """
-        return self.v_scroll_to(self.v_scroll_range()[1])
+    #     @returns {int} - 设置后的当前位置
+    #     """
+    #     return self.v_scroll_to(self.v_scroll_range[1])
 
-    def h_scroll_to(self, pos: int) -> int:
-        """
-        滚动水平滚动条到指定位置
+    # def h_scroll_to(self, pos: int) -> int:
+    #     """
+    #     滚动水平滚动条到指定位置
 
-        @param {int} pos - 要滚动到的位置
+    #     @param {int} pos - 要滚动到的位置
 
-        @returns {int} - 设置后的当前位置
-        """
-        return win32gui.SetScrollInfo(
-            self.handle,
-            (win32con.SB_HORZ, 0, 0, 0, pos, 0)
-        )
+    #     @returns {int} - 设置后的当前位置
+    #     """
+    #     return win32gui.SetScrollInfo(
+    #         self.handle,
+    #         (win32con.SB_HORZ, 0, 0, 0, pos, 0)
+    #     )
 
-    def h_scroll_to_head(self) -> int:
-        """
-        滚动垂直滚动条到开头
+    # def h_scroll_to_head(self) -> int:
+    #     """
+    #     滚动垂直滚动条到开头
 
-        @returns {int} - 设置后的当前位置
-        """
-        return self.h_scroll_to(0)
+    #     @returns {int} - 设置后的当前位置
+    #     """
+    #     return self.h_scroll_to(0)
 
-    def h_scroll_to_end(self) -> int:
-        """
-        滚动垂直滚动条到最后
+    # def h_scroll_to_end(self) -> int:
+    #     """
+    #     滚动垂直滚动条到最后
 
-        @returns {int} - 设置后的当前位置
-        """
-        return self.h_scroll_to(self.h_scroll_range()[1])
+    #     @returns {int} - 设置后的当前位置
+    #     """
+    #     return self.h_scroll_to(self.h_scroll_range[1])
 
     #############################
     # 窗口操作 - 菜单

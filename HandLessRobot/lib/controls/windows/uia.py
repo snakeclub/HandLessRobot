@@ -28,7 +28,7 @@ from HiveNetLib.base_tools.file_tool import FileTool
 # 根据当前文件路径将包路径纳入，在非安装的情况下可以引用到
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir)))
-import HandLessRobot.lib.controls.base_control as base_control
+import HandLessRobot.lib.controls.windows_control as base_control
 
 
 __MOUDLE__ = 'windows_uia'  # 模块名
@@ -308,7 +308,7 @@ class Window(base_control.Window):
             [
                 # step 1
                 {
-                    'by_step': True,  # 是否逐步往下查找，Fasle代表搜索上一步的所有子对象
+                    'by_step': True,  # 是否逐步往下查找，Fasle代表搜索同级控件的所有子对象
                     'pos': 0, # 取查找结果的第几个(0开始)
                     'options': {  # 窗口匹配条件，支持的参数参考find_window
                         ...
@@ -432,6 +432,7 @@ class Window(base_control.Window):
 
         try:
             # 先打印当前窗口信息
+            _seq_num = 0  # 打印顺序号
             win: WindowControlSpec
             _before_win = None
             if set_foreground or screen_shot_save_path is not None:
@@ -452,19 +453,20 @@ class Window(base_control.Window):
                 _parent_depth_index[0] = _print_obj
             else:
                 if _file is None:
-                    print('%smemory_id: %d    %s' % (pre_fix_str, id(win), _print_obj))
+                    print('%smemory_id: 0-0-%d    %s' % (pre_fix_str, id(win), _print_obj))
                 else:
-                    _file.write('%smemory_id: %d    %s\r\n' % (pre_fix_str, id(win), _print_obj))
+                    _file.write('%smemory_id: 0-0-%d    %s\r\n' %
+                                (pre_fix_str, id(win), _print_obj))
 
             if screen_shot_save_path is not None:
                 # 进行控件的屏幕截图
                 l, t, r, b = win.win_rect
                 try:
                     Screen.screenshot(
-                        image_save_file=os.path.join(screen_shot_save_path, '%s.jpg' % id(win)),
+                        image_save_file=os.path.join(screen_shot_save_path, '0-0-%s.jpg' % id(win)),
                         region=(l, t, r - l, b - t)
                     )
-                except SystemError:
+                except:
                     if _file is None:
                         print('save_screen_shot_err: %s' % str(win.win_rect))
                     else:
@@ -472,6 +474,7 @@ class Window(base_control.Window):
 
             if depth > 0:
                 for _control, _depth in auto.WalkControl(win.automation_control, includeTop=False, maxDepth=depth):
+                    _seq_num += 1
                     _win_ctl = WindowControlSpec(win_object=_control)
                     _print_obj = cls.get_window_print_str(
                         _win_ctl, depth=_depth,
@@ -485,14 +488,18 @@ class Window(base_control.Window):
                         _parent_depth_index[_depth] = _print_obj
                     else:
                         if _file is None:
-                            print('%smemory_id: %d    %s' % (
+                            print('%smemory_id: %d-%d-%d    %s' % (
                                 ' ' * _depth * 4,
+                                _seq_num,
+                                _depth,
                                 id(_win_ctl),
                                 _print_obj
                             ))
                         else:
-                            _file.write('%smemory_id: %d    %s\r\n' % (
+                            _file.write('%smemory_id: %d-%d-%d    %s\r\n' % (
                                 ' ' * _depth * 4,
+                                _seq_num,
+                                _depth,
                                 id(_win_ctl),
                                 _print_obj
                             ))
@@ -503,10 +510,10 @@ class Window(base_control.Window):
                         try:
                             Screen.screenshot(
                                 image_save_file=os.path.join(
-                                    screen_shot_save_path, '%s.jpg' % id(_win_ctl)),
+                                    screen_shot_save_path, '%s-%d-%d.jpg' % (_seq_num, _depth, id(_win_ctl))),
                                 region=(l, t, r - l, b - t)
                             )
-                        except SystemError:
+                        except:
                             if _file is None:
                                 print('save_screen_shot_err: %s' % str(_win_ctl.win_rect))
                             else:
@@ -1048,39 +1055,72 @@ class WindowControlSpec(base_control.WindowControlSpec):
         获取窗口的区域(left, top, right, bottom)
         @property {tuple}
         """
-        return self._win_object.BoundingRectangle
+        _rect = self._win_object.BoundingRectangle
+        return (_rect.left, _rect.top, _rect.right, _rect.bottom)
 
     @property
-    def v_scroll_range(self) -> tuple:
+    def v_scroll_viewsize(self) -> float:
         """
-        获取垂直滚动条的取值范围
-        @property {tuple}
+        获取垂直滚动条的显示区域百分占比
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
-        raise NotImplementedError('not support property')
+        _scroll_pattern: auto.ScrollPattern = self._win_object.GetPattern(
+            auto.PatternId.ScrollPattern)
+        if _scroll_pattern is None:
+            # 不可拖动
+            return 100.0
+        else:
+            return _scroll_pattern.VerticalViewSize
 
     @property
-    def v_scroll_pos(self) -> int:
+    def v_scroll_pos(self) -> float:
         """
         获取垂直滚动条的当前位置
-        @property {int}
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
-        raise NotImplementedError('not support property')
+        _scroll_pattern: auto.ScrollPattern = self._win_object.GetPattern(
+            auto.PatternId.ScrollPattern)
+        if _scroll_pattern is None:
+            # 不可拖动
+            return 100.0
+        else:
+            return _scroll_pattern.VerticalScrollPercent
 
     @property
-    def h_scroll_range(self) -> tuple:
+    def h_scroll_viewsize(self) -> float:
         """
-        获取水平滚动条的取值范围
-        @property {tuple}
+        获取水平滚动条的显示区域百分占比
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
-        raise NotImplementedError('not support property')
+        _scroll_pattern: auto.ScrollPattern = self._win_object.GetPattern(
+            auto.PatternId.ScrollPattern)
+        if _scroll_pattern is None:
+            # 不可拖动
+            return 100.0
+        else:
+            return _scroll_pattern.HorizontalViewSize
 
     @property
-    def h_scroll_pos(self) -> int:
+    def h_scroll_pos(self) -> float:
         """
         获取水平滚动条的当前位置
-        @property {int}
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
-        raise NotImplementedError('not support property')
+        _scroll_pattern: auto.ScrollPattern = self._win_object.GetPattern(
+            auto.PatternId.ScrollPattern)
+        if _scroll_pattern is None:
+            # 不可拖动
+            return 100.0
+        else:
+            return _scroll_pattern.HorizontalScrollPercent
 
     #############################
     # 窗口遍历
@@ -1254,57 +1294,63 @@ class WindowControlSpec(base_control.WindowControlSpec):
     #############################
     # 窗口操作 - 滚动条
     #############################
-    def v_scroll_to(self, pos: int) -> int:
+    def v_scroll_to(self, pos: float):
         """
         滚动垂直滚动条到指定位置
 
-        @param {int} pos - 要滚动到的位置
-
-        @returns {int} - 设置后的当前位置
+        @param {float} pos - 要滚动到的位置百分比，[0.0, 100.0]之间
         """
-        raise NotImplementedError()
+        _scroll_pattern: auto.ScrollPattern = self._win_object.GetPattern(
+            auto.PatternId.ScrollPattern)
+        if _scroll_pattern is None or not _scroll_pattern.VerticallyScrollable:
+            # 不可拖动
+            return
 
-    def v_scroll_to_head(self) -> int:
+        # 滚动
+        _scroll_pattern.SetScrollPercent(
+            -1, pos
+        )
+
+    def v_scroll_to_head(self):
         """
         滚动垂直滚动条到开头
-
-        @returns {int} - 设置后的当前位置
         """
-        raise NotImplementedError()
+        return self.v_scroll_to(0.0)
 
-    def v_scroll_to_end(self) -> int:
+    def v_scroll_to_end(self):
         """
         滚动垂直滚动条到最后
-
-        @returns {int} - 设置后的当前位置
         """
-        raise NotImplementedError()
+        return self.v_scroll_to(100.0)
 
-    def h_scroll_to(self, pos: int) -> int:
+    def h_scroll_to(self, pos: float):
         """
         滚动水平滚动条到指定位置
 
-        @param {int} pos - 要滚动到的位置
-
-        @returns {int} - 设置后的当前位置
+        @param {float} pos - 要滚动到的位置百分比，[0.0, 100.0]之间
         """
-        raise NotImplementedError()
+        _scroll_pattern: auto.ScrollPattern = self._win_object.GetPattern(
+            auto.PatternId.ScrollPattern)
+        if _scroll_pattern is None or not _scroll_pattern.VerticallyScrollable:
+            # 不可拖动
+            return
 
-    def h_scroll_to_head(self) -> int:
+        # 滚动
+        _scroll_pattern.SetScrollPercent(
+            pos, -1
+        )
+
+    def h_scroll_to_head(self):
         """
         滚动垂直滚动条到开头
-
-        @returns {int} - 设置后的当前位置
         """
-        raise NotImplementedError()
+        return self.h_scroll_to(0.0)
 
-    def h_scroll_to_end(self) -> int:
+    def h_scroll_to_end(self):
         """
         滚动垂直滚动条到最后
-
-        @returns {int} - 设置后的当前位置
         """
-        raise NotImplementedError()
+        return self.h_scroll_to(100.0)
 
     #############################
     # 窗口操作 - 菜单

@@ -26,7 +26,7 @@ from HandLessRobot.lib.actions.common_action import CommonAction
 from HandLessRobot.lib.actions.windows_action import WindowsAction, WindowsUiaAction
 from HandLessRobot.lib.actions.chrome_action import WindowsChromeAction
 from HandLessRobot.lib.controls.windows.uia import Window, WindowControlSpec
-from HandLessRobot.lib.controls.base_control import Keyboard, Screen, Clipboard
+from HandLessRobot.lib.controls.windows_control import Keyboard, Screen, Clipboard
 
 
 class MyRobot(object):

@@ -16,12 +16,14 @@ import os
 import sys
 import time
 import random
+import datetime
+import time
 from HiveNetLib.base_tools.run_tool import RunTool
 # 根据当前文件路径将包路径纳入，在非安装的情况下可以引用到
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)))
 from HandLessRobot.lib.actions.base_action import BaseAction
-from HandLessRobot.lib.controls.base_control import Screen, Mouse, Keyboard, Clipboard
+from HandLessRobot.lib.controls.windows_control import Screen, Mouse, Keyboard, Clipboard
 
 
 __MOUDLE__ = 'common_action'  # 模块名
@@ -102,66 +104,87 @@ class CommonAction(BaseAction):
     # 运行中临时变量处理
     #############################
     @classmethod
-    def get_run_variable(cls, robot_info: dict, action_name: str, var_name: str, default_value=None, **kwargs):
+    def get_run_variable(cls, robot_info: dict, action_name: str, run_id: str, var_name: str,
+                         default_value=None, get_run_id: str = '*', **kwargs):
         """
         获取运行变量值
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {str} var_name - 变量名
         @param {object} default_value=None - 如果找不到变量的默认值
+        @param {str} get_run_id='*' - 机器人运行id
 
         @returns {object} - 返回的变量值
         """
-        if var_name in robot_info['vars'].keys():
-            return robot_info['vars'][var_name]
+        if get_run_id in robot_info['vars'].keys():
+            return robot_info['vars'][get_run_id].get(var_name, default_value)
         else:
             return default_value
 
     @classmethod
-    def set_run_variable(cls, robot_info: dict, action_name: str, var_name: str, set_value, **kwargs):
+    def set_run_variable(cls, robot_info: dict, action_name: str, run_id: str, var_name: str, set_value,
+                         set_run_id: str = '*', **kwargs):
         """
         设置运行变量值
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {str} var_name - 变量名
         @param {object} set_value - 要设置的变量值
+        @param {str} set_run_id='*' - 机器人运行id
         """
-        robot_info['vars'][var_name] = set_value
+        if set_run_id not in robot_info['vars'].keys():
+            robot_info['vars'][set_run_id] = dict()
+
+        robot_info['vars'][set_run_id][var_name] = set_value
 
     @classmethod
-    def del_run_variable(cls, robot_info: dict, action_name: str, var_name: str, **kwargs):
+    def del_run_variable(cls, robot_info: dict, action_name: str, run_id: str, var_name: str,
+                         del_run_id: str = '*', **kwargs):
         """
         删除运行变量值
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {str} var_name - 变量名
+        @param {str} del_run_id='*' - 机器人运行id
         """
-        if var_name in robot_info['vars'].keys():
-            robot_info['vars'].pop(var_name)
+        if del_run_id in robot_info['vars'].keys():
+            robot_info['vars'][del_run_id].pop(var_name)
 
     @classmethod
-    def del_all_run_variable(cls, robot_info: dict, action_name: str, **kwargs):
+    def del_all_run_variable(cls, robot_info: dict, action_name: str, run_id: str, del_run_id: str = None, **kwargs):
         """
         删除所有运行变量
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
+        @param {str} del_run_id=None - 机器人运行id, None代表清空所有变量
         """
-        robot_info['vars'].clear()
+        if del_run_id is None:
+            # 清空所有变量
+            for _key in robot_info['vars'].keys():
+                robot_info['vars'][_key].clear()
+        else:
+            if del_run_id in robot_info['vars'].keys():
+                robot_info['vars'][del_run_id].clear()
 
     #############################
     # 执行脚本
     #############################
     @classmethod
-    def run_script(cls, robot_info: dict, action_name: str, script_str: str, **kwargs):
+    def run_script(cls, robot_info: dict, action_name: str, run_id: str, script_str: str, **kwargs):
         """
         运行Python脚本
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {str} script_str - 要运行的python脚本
             注：脚本中可以直接通过robot_info变量访问robot对象
                 如果需要返回值，可以在脚本中改变"_return_val"的值进行返回
@@ -174,12 +197,13 @@ class CommonAction(BaseAction):
     # 逻辑控制方法
     #############################
     @classmethod
-    def time_wait(cls, robot_info: dict, action_name: str, interval: float, is_random: bool = False, **kwargs):
+    def time_wait(cls, robot_info: dict, action_name: str, run_id: str, interval: float, is_random: bool = False, **kwargs):
         """
         等待指定的时间
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {float} interval - 要等待的时间
         @param {bool} is_random=False - 是否等待随机时间，如果True则等待(0, interval)之间的随机时间
         """
@@ -190,12 +214,13 @@ class CommonAction(BaseAction):
         time.sleep(_time)
 
     @classmethod
-    def time_wait_global(cls, robot_info: dict, action_name: str, multiple: float = 1.0, **kwargs):
+    def time_wait_global(cls, robot_info: dict, action_name: str, run_id: str, multiple: float = 1.0, **kwargs):
         """
         等待全局统一设置的时间
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {float} multiple=1 - 等待时间的倍数
         """
         _time = RunTool.get_global_var('COMMON_ACTION_TIME_WAIT')
@@ -206,15 +231,64 @@ class CommonAction(BaseAction):
         time.sleep(_time * multiple)
 
     @classmethod
-    def set_global_time_wait(cls, robot_info: dict, action_name: str, interval: float, **kwargs):
+    def set_global_time_wait(cls, robot_info: dict, action_name: str, run_id: str, interval: float, **kwargs):
         """
         设置全局统一等待时长
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {float} interval - 要设置的等待时长
         """
         RunTool.set_global_var('COMMON_ACTION_TIME_WAIT', interval)
+
+    @classmethod
+    def wait_command(cls, robot_info: dict, action_name: str, run_id: str, cmd_router: dict, over_time: int = 0,
+                     over_time_step_id: str = None, sleep_time: int = 500, **kwargs):
+        """
+        等待执行命令
+        注：通过查询机器人运行变量(run_variable)的'{$WAIT_COMMAND$}'变量获取命令，不支持多个命令传入
+
+        @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
+        @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
+        @param {dict} cmd_router - 获取到命令后的路由配置字典
+            key为要匹配的命令字符串（区分大小写），value为匹配上后跳转到的step_id
+        @param {int} over_time=0 - 等待命令的超时时间，单位为秒
+        @param {str} over_time_step_id=None - 当执行超时时跳转到的步骤id，如果为None则按照正常节点完成方式执行下一个节点
+        @param {int} sleep_time=500 - 间隔轮询命令的睡眠时间，单位为毫秒
+
+        @throws {KeyError} - 当获取到的命令不支持时抛出异常
+        """
+        # 一开始先删除{$WAIT_COMMAND$}变量，避免历史数据的干扰
+        _var_name = '{$WAIT_COMMAND$}'
+        if run_id in robot_info['vars'].keys():
+            robot_info['vars'][run_id].pop(_var_name)
+
+        # 循环遍历
+        _start = datetime.datetime.now()
+        while True:
+            if run_id in robot_info['vars'].keys():
+                _cmd = robot_info['vars'][run_id].pop(_var_name, None)
+                if _cmd is not None:
+                    # 找到命令
+                    if _cmd not in cmd_router.keys():
+                        raise KeyError('Not support cmd [%s]!' % _cmd)
+
+                    # 设置跳转参数
+                    return
+
+            # 未获取到命令，检查是否超时
+            if over_time > 0 and (datetime.datetime.now() - _start).total_seconds() > over_time:
+                if over_time_step_id not None:
+                    # 跳转到超时指定步骤
+                    pass
+
+                # 跳出循环
+                return
+
+            # 休眠一段时间，继续尝试获取
+            time.sleep(sleep_time)
 
 
 if __name__ == '__main__':

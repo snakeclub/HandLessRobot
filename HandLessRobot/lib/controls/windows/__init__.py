@@ -2,5 +2,4 @@
 # -*- coding: UTF-8 -*-
 
 __all__ = [
-    'console', 'lib', 'i18n', 'conf'
 ]

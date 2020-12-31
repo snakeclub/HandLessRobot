@@ -14,17 +14,17 @@
 
 import os
 import sys
-import copy
 import pyautogui
 import pyperclip
+from PIL import Image
 from HiveNetLib.base_tools.file_tool import FileTool
 # 根据当前文件路径将包路径纳入，在非安装的情况下可以引用到
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)))
 
 
-__MOUDLE__ = 'base_control'  # 模块名
-__DESCRIPT__ = u'控制操作模块'  # 模块描述
+__MOUDLE__ = 'windows_control'  # 模块名
+__DESCRIPT__ = u'电脑控制操作模块'  # 模块描述
 __VERSION__ = '0.1.0'  # 版本
 __AUTHOR__ = u'黎慧剑'  # 作者
 __PUBLISH__ = '2020.04.15'  # 发布日期
@@ -94,16 +94,24 @@ class Screen(object):
         return pyautogui.screenshot(imageFilename=image_save_file, region=region)
 
     @classmethod
-    def locate_on_screen(cls, image, grayscale=False):
+    def locate_on_screen(cls, image, grayscale=False, **kwargs):
         """
         在屏幕中定位指定图片的位置
 
-        @param {str} image - 要定位的图片文件
+        @param {str|PIL.Image} image - 要定位的图片文件路径或图片对象
         @param {bool} grayscale=False - 是否转换图片为灰度检索(提升30%速度)
+        @param {dict} kwargs - 其他执行参数:
+            {int} limit=10000 - 匹配数量限制
+            {int} step=1 - 匹配步骤，支持送1或2，如果为2会跳过细节，大约能提升3倍速度，但有可能匹配不上
+            {float} confidence=0.999 - 匹配度
 
         @returns {(int, int, int, int)} - 返回图片的位置(x, y, width, height)
         """
-        return pyautogui.locateOnScreen(image, grayscale=grayscale)
+        if type(image) == str:
+            _image = Image.open(image)
+        else:
+            _image = image
+        return pyautogui.locateOnScreen(_image, grayscale=grayscale, **kwargs)
 
     @classmethod
     def locate_center_on_screen(cls, image, grayscale=False):
@@ -630,34 +638,42 @@ class WindowControlSpec(object):
         raise NotImplementedError()
 
     @property
-    def v_scroll_range(self) -> tuple:
+    def v_scroll_viewsize(self) -> float:
         """
-        获取垂直滚动条的取值范围
-        @property {tuple}
+        获取垂直滚动条的显示区域百分占比
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
         raise NotImplementedError()
 
     @property
-    def v_scroll_pos(self) -> int:
+    def v_scroll_pos(self) -> float:
         """
         获取垂直滚动条的当前位置
-        @property {int}
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
         raise NotImplementedError()
 
     @property
-    def h_scroll_range(self) -> tuple:
+    def h_scroll_viewsize(self) -> float:
         """
-        获取水平滚动条的取值范围
-        @property {tuple}
+        获取水平滚动条的显示区域百分占比
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
         raise NotImplementedError()
 
     @property
-    def h_scroll_pos(self) -> int:
+    def h_scroll_pos(self) -> float:
         """
         获取水平滚动条的当前位置
-        @property {int}
+        注：[0.0, 100.0] 区间内的值
+
+        @property {float}
         """
         raise NotImplementedError()
 
@@ -777,55 +793,43 @@ class WindowControlSpec(object):
     #############################
     # 窗口操作 - 滚动条
     #############################
-    def v_scroll_to(self, pos: int) -> int:
+    def v_scroll_to(self, pos: float):
         """
         滚动垂直滚动条到指定位置
 
-        @param {int} pos - 要滚动到的位置
-
-        @returns {int} - 设置后的当前位置
+        @param {float} pos - 要滚动到的位置百分比，[0.0, 100.0]之间
         """
         raise NotImplementedError()
 
-    def v_scroll_to_head(self) -> int:
+    def v_scroll_to_head(self):
         """
         滚动垂直滚动条到开头
-
-        @returns {int} - 设置后的当前位置
         """
         raise NotImplementedError()
 
-    def v_scroll_to_end(self) -> int:
+    def v_scroll_to_end(self):
         """
         滚动垂直滚动条到最后
-
-        @returns {int} - 设置后的当前位置
         """
         raise NotImplementedError()
 
-    def h_scroll_to(self, pos: int) -> int:
+    def h_scroll_to(self, pos: float):
         """
         滚动水平滚动条到指定位置
 
-        @param {int} pos - 要滚动到的位置
-
-        @returns {int} - 设置后的当前位置
+        @param {float} pos - 要滚动到的位置百分比，[0.0, 100.0]之间
         """
         raise NotImplementedError()
 
-    def h_scroll_to_head(self) -> int:
+    def h_scroll_to_head(self):
         """
         滚动垂直滚动条到开头
-
-        @returns {int} - 设置后的当前位置
         """
         raise NotImplementedError()
 
     def h_scroll_to_end(self) -> int:
         """
         滚动垂直滚动条到最后
-
-        @returns {int} - 设置后的当前位置
         """
         raise NotImplementedError()
 

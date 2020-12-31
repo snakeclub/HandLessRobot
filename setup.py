@@ -27,7 +27,9 @@ DEPENDENCIES = [
     'psutil',
     'uiautomation',
     'pyperclip',
-    'prompt-toolkit>=2.0.0'
+    'pyscreeze',
+    'prompt-toolkit>=2.0.0',
+    'Appium-Python-Client'
 ]
 
 # DEPENDENCIES = []

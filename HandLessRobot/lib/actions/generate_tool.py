@@ -40,7 +40,7 @@ class ActionCodeTool(object):
                                       platform: dict = {'*': None},
                                       standards: str = 'SnakerPy', to_json: bool = False,
                                       para_default_none_to_str: str = None,
-                                      is_common_attr_call=False):
+                                      is_common_attr_call=False, is_control: bool = False):
         """
         根据指定函数返回对应的动作路由(Action Router)字典
 
@@ -56,6 +56,7 @@ class ActionCodeTool(object):
         @param {bool} to_json=False - 是否返回json字符串
         @param {str} para_default_none_to_str=None - 将参数默认值为None的情况转换为指定字符串
         @param {bool} is_common_attr_call=False - 是否通用实例方法及属性调用，如果是则需要在入参中增加配置信息
+        @param {bool} is_control=False - 是否属于控制动作
 
         @returns {dict} - 返回生成的动作路由(Action Router)字典，如果to_json为True则返回json字符串
         """
@@ -74,15 +75,27 @@ class ActionCodeTool(object):
             _fun = call_fun_obj if fun_pre_fix is None else '%s%s' % (
                 fun_pre_fix, call_fun_obj.__name__)
 
+        _instance_class = ''
+
         # 通用实例方法及属性的处理
         if is_common_attr_call:
             _doc_dict['param'].insert(1, ['instance_obj', 'object', None, '要执行的实例对象'])
+            # 获得函数的所属类的类名
+            if type(fun_obj) == property:
+                # 属性
+                if fun_obj.fget:
+                    _instance_class = fun_obj.fget.__qualname__[0: -len(fun_obj.fget.__name__)]
+            else:
+                # 函数
+                _instance_class = fun_obj.__qualname__[0: -len(fun_obj.__name__)]
 
         # 组成字典代码
         _action_router = {
             _action_name: {
                 'fun': _fun,
                 'platform': platform,
+                'instance_class': _instance_class,
+                'is_control': is_control,
                 'name': _doc_dict['title'],
                 'desc': _doc_dict['descript'],
                 'param': _doc_dict['param'],
@@ -163,13 +176,20 @@ class ActionCodeTool(object):
             # 要转换为字符串的情况，认定需要转为类名前缀
             _fun_pre_fix = class_obj.__name__ + '.'
 
+        # 判断是否控制函数
+        _is_control = False
+        _is_control_actions_fun = getattr(class_obj, 'is_control_actions', None)
+        if _is_control_actions_fun is not None:
+            _is_control = _is_control_actions_fun()
+
         # 遍历处理生成
         _action_router = {}
         for _name, _value in inspect.getmembers(class_obj):
             if not _name.startswith('_') and callable(_value):
                 if igonre_base_action_fun and _name in [
-                    'support_action_types', 'get_action_router', 'common_fun',
-                    'get_common_fun_dict', 'support_platform',
+                    'support_action_types', 'support_platform', 'get_action_router',
+                    'print_action_router', 'is_control_actions',
+                    'get_common_fun_dict', 'common_fun',
                     'get_common_attr_dict', 'common_attr_call'
                 ]:
                     # 默认函数不处理
@@ -179,7 +199,8 @@ class ActionCodeTool(object):
                     _value, fun_pre_fix=_fun_pre_fix,
                     platform=platform,
                     standards=standards, to_json=_to_json,
-                    para_default_none_to_str=_para_default_none_to_str
+                    para_default_none_to_str=_para_default_none_to_str,
+                    is_control=_is_control
                 )
 
                 # 合并
@@ -207,7 +228,7 @@ class ActionCodeTool(object):
     def get_action_router_by_fun_dict(cls, fun_dict: dict, call_fun_obj=None, fun_pre_fix: str = None,
                                       platform: dict = {'*': None},
                                       standards: str = 'SnakerPy', to_json: bool = False,
-                                      para_default_none_to_str: str = None):
+                                      para_default_none_to_str: str = None, is_control: bool = False):
         """
         根据指定函数映射字典返回对应的动作路由(Action Router)字典
 
@@ -221,6 +242,7 @@ class ActionCodeTool(object):
         @param {str} standards='SnakerPy' - 注释规范类型
         @param {bool} to_json=False - 是否返回json字符串
         @param {str} para_default_none_to_str=None - 将参数默认值为None的情况转换为指定字符串
+        @param {bool} is_control=False - 是否控制动作
         """
         # 控制生成结果的参数
         _to_json = False
@@ -242,7 +264,8 @@ class ActionCodeTool(object):
                 fun_pre_fix=_fun_pre_fix,
                 platform=platform,
                 standards=standards, to_json=_to_json,
-                para_default_none_to_str=_para_default_none_to_str
+                para_default_none_to_str=_para_default_none_to_str,
+                is_control=is_control
             )
 
             # 合并
@@ -270,7 +293,7 @@ class ActionCodeTool(object):
     def get_action_router_by_attr_dict(cls, attr_dict: dict, call_fun_obj=None,
                                        platform: dict = {'*': None},
                                        standards: str = 'SnakerPy', to_json: bool = False,
-                                       para_default_none_to_str: str = None):
+                                       para_default_none_to_str: str = None, is_control: bool = False):
         """
         根据指定函数映射字典返回对应的动作路由(Action Router)字典
 
@@ -282,6 +305,7 @@ class ActionCodeTool(object):
         @param {str} standards='SnakerPy' - 注释规范类型
         @param {bool} to_json=False - 是否返回json字符串
         @param {str} para_default_none_to_str=None - 将参数默认值为None的情况转换为指定字符串
+        @param {bool} is_control=False - 是否控制动作
         """
         # 控制生成结果的参数
         _to_json = False
@@ -303,7 +327,8 @@ class ActionCodeTool(object):
                 platform=platform,
                 standards=standards, to_json=_to_json,
                 para_default_none_to_str=_para_default_none_to_str,
-                is_common_attr_call=True
+                is_common_attr_call=True,
+                is_control=is_control
             )
 
             # 合并
@@ -395,7 +420,7 @@ class ActionCodeTool(object):
                 if _step == 'param':
                     if _line.startswith('@param'):
                         # 新的参数
-                        _index1 = _line.find('-')
+                        _index1 = _line.rfind(' - ')
                         _temparray = _line[0: _index1].strip(' ').split(' ')
                         _name = ''
                         if len(_temparray) > 2:
@@ -407,7 +432,7 @@ class ActionCodeTool(object):
                             _name = _name[0:_index2]
                         _dict['param'].append([
                             _name, _temparray[1].strip(
-                                '{}'), _default, _line[_index1 + 1:].strip(' ')
+                                '{}'), _default, _line[_index1 + 3:].strip(' ')
                         ])
                         continue
                     elif not _line.startswith('@'):
@@ -418,11 +443,11 @@ class ActionCodeTool(object):
                 # 返回值的处理
                 if _step == 'returns':
                     if _line.startswith('@returns'):
-                        _index1 = _line.find('-')
+                        _index1 = _line.rfind(' - ')
                         _temparray = _line[0: _index1].strip(' ').split(' ')
                         _dict['returns'] = [
                             _temparray[1].strip('{}'),
-                            _line[_index1 + 1:].strip(' ')
+                            _line[_index1 + 3:].strip(' ')
                         ]
                     elif _line.startswith('@property'):
                         _dict['returns'] = [

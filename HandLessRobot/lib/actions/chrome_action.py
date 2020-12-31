@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)))
 from HandLessRobot.lib.actions.base_action import BaseAction
 from HandLessRobot.lib.actions.common_action import CommonAction
-from HandLessRobot.lib.controls.base_control import WindowException
+from HandLessRobot.lib.controls.windows_control import WindowException
 import HandLessRobot.lib.controls.windows.uia as winuia
 
 
@@ -131,7 +131,7 @@ class WindowsChromeAction(BaseAction):
     # 公共参数管理
     #############################
     @classmethod
-    def chrome_para_get_wait_less_timeout(cls, robot_info: dict, action_name: str,
+    def chrome_para_get_wait_less_timeout(cls, robot_info: dict, action_name: str, run_id: str,
                                           **kwargs) -> float:
         """
         获取参数值 - 最小等待超时时间
@@ -139,25 +139,27 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
 
         @returns {float} - 超时时间，默认为10秒
         """
         return cls._get_global_var_default('CHROME_ACTION_PARA_WAIT_LESS_TIMEOUT', 10.0)
 
     @classmethod
-    def chrome_para_set_wait_less_timeout(cls, robot_info: dict, action_name: str, value: float,
+    def chrome_para_set_wait_less_timeout(cls, robot_info: dict, action_name: str, run_id: str, value: float,
                                           **kwargs) -> float:
         """
         获取参数值 - 最小等待超时时间
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {float} value - 要设置的参数，单位秒2秒
         """
         RunTool.set_global_var('CHROME_ACTION_PARA_WAIT_LESS_TIMEOUT', value)
 
     @classmethod
-    def chrome_para_get_find_step_tag(cls, robot_info: dict, action_name: str,
+    def chrome_para_get_find_step_tag(cls, robot_info: dict, action_name: str, run_id: str,
                                       **kwargs) -> str:
         """
         获取参数值 - 控件查找类型标志
@@ -165,19 +167,21 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
 
         @returns {str} - 控件查找类型标志
         """
         return cls._get_global_var_default('CHROME_ACTION_PARA_FIND_STEPS_TAG', 'win10+64+chrome83')
 
     @classmethod
-    def chrome_para_set_find_step_tag(cls, robot_info: dict, action_name: str, value: float,
+    def chrome_para_set_find_step_tag(cls, robot_info: dict, action_name: str, run_id: str, value: float,
                                       **kwargs) -> float:
         """
         获取参数值 - 控件查找类型标志
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {float} value - 要设置的参数
         """
         RunTool.set_global_var('CHROME_ACTION_PARA_FIND_STEPS_TAG', value)
@@ -186,7 +190,7 @@ class WindowsChromeAction(BaseAction):
     # 应用启动关闭
     #############################
     @classmethod
-    def get_chrome_app(cls, robot_info: dict, action_name: str,
+    def get_chrome_app(cls, robot_info: dict, action_name: str, run_id: str,
                        bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
                        name='chrome.exe',
                        **kwargs) -> winuia.ApplicationSpec:
@@ -195,6 +199,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {string} bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' - 启动程序路径
         @param {string} name='chrome.exe' - 进程名
 
@@ -207,7 +212,7 @@ class WindowsChromeAction(BaseAction):
         )
 
     @classmethod
-    def chrome_start(cls, robot_info: dict, action_name: str,
+    def chrome_start(cls, robot_info: dict, action_name: str, run_id: str,
                      bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
                      name='chrome.exe', run_paras=['--force-renderer-accessibility'],
                      **kwargs) -> winuia.ApplicationSpec:
@@ -216,6 +221,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {string} bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' - 启动程序路径
         @param {string} name='chrome.exe' - 进程名
         @param {list} run_paras=['--force-renderer-accessibility'] - 启动参数列表
@@ -239,7 +245,7 @@ class WindowsChromeAction(BaseAction):
         return _app
 
     @classmethod
-    def get_chrome_window(cls, robot_info: dict, action_name: str,
+    def get_chrome_window(cls, robot_info: dict, action_name: str, run_id: str,
                           app: winuia.ApplicationSpec = None,
                           bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
                           name='chrome.exe', run_paras=['--force-renderer-accessibility'],
@@ -249,6 +255,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {winuia.ApplicationSpec} app=None - 已获取到的chorme进程对象，如果为None则根据启动参数自动启动
         @param {string} bin_path='C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' - 启动程序路径
         @param {string} name='chrome.exe' - 进程名
@@ -270,7 +277,7 @@ class WindowsChromeAction(BaseAction):
         )
 
     @classmethod
-    def chrome_close(cls, robot_info: dict, action_name: str,
+    def chrome_close(cls, robot_info: dict, action_name: str, run_id: str,
                      chrome_win: winuia.WindowControlSpec = None,
                      chrome_app: winuia.ApplicationSpec = None,
                      **kwargs):
@@ -279,6 +286,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win=None - 通过指定Chrome浏览器窗口关闭
         @param {ApplicationSpec} chrome_app=None - 通过指定Chrome浏览器应用关闭
         """
@@ -291,7 +299,7 @@ class WindowsChromeAction(BaseAction):
     # 地址跳转
     #############################
     @classmethod
-    def chrome_get_url_editer(cls, robot_info: dict, action_name: str,
+    def chrome_get_url_editer(cls, robot_info: dict, action_name: str, run_id: str,
                               chrome_win: winuia.WindowControlSpec,
                               name: str = '地址和搜索栏',
                               **kwargs):
@@ -300,6 +308,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {winuia.WindowControlSpec} chrome_win - Chrome浏览器窗口
         @param {str} name='地址和搜索栏' - 地址栏名称，注意如果多国语言为非中文需要传入正确的值
 
@@ -316,7 +325,7 @@ class WindowsChromeAction(BaseAction):
         )
 
     @classmethod
-    def chrome_goto_url(cls, robot_info: dict, action_name: str, url: str,
+    def chrome_goto_url(cls, robot_info: dict, action_name: str, run_id: str, url: str,
                         chrome_win: winuia.WindowControlSpec = None,
                         url_editer: winuia.WindowControlSpec = None,
                         name: str = '地址和搜索栏',
@@ -326,6 +335,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {str} url - 要跳转到的地址
         @param {winuia.WindowControlSpec} chrome_win=None - 浏览器主窗口，如果url_editer为None则必送
         @param {winuia.WindowControlSpec} url_editer=None - 地址栏编辑对象，如果chrome_win为None则必送
@@ -347,7 +357,7 @@ class WindowsChromeAction(BaseAction):
     # 标签页操作
     #############################
     @classmethod
-    def chrome_get_tabs(cls, robot_info: dict, action_name: str,
+    def chrome_get_tabs(cls, robot_info: dict, action_name: str, run_id: str,
                         chrome_win: winuia.WindowControlSpec,
                         **kwargs) -> list:
         """
@@ -355,6 +365,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
 
         @returns {list} - 页签对象清单
@@ -374,7 +385,7 @@ class WindowsChromeAction(BaseAction):
         return _tabs.get_childrens()
 
     @classmethod
-    def chrome_get_selected_tab(cls, robot_info: dict, action_name: str,
+    def chrome_get_selected_tab(cls, robot_info: dict, action_name: str, run_id: str,
                                 chrome_win: winuia.WindowControlSpec,
                                 **kwargs) -> winuia.WindowControlSpec:
         """
@@ -382,6 +393,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
 
         @returns {WindowControlSpec} - 当前选择的页面标签对象
@@ -400,7 +412,7 @@ class WindowsChromeAction(BaseAction):
         return None
 
     @classmethod
-    def chrome_select_tab(cls, robot_info: dict, action_name: str,
+    def chrome_select_tab(cls, robot_info: dict, action_name: str, run_id: str,
                           chrome_win: winuia.WindowControlSpec,
                           index: int = 0, name: str = None, name_with: str = None,
                           **kwargs) -> winuia.WindowControlSpec:
@@ -409,6 +421,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {winuia.WindowControlSpec} chrome_win - Chrome浏览器窗口
         @param {int} index=0 - 按位置选择，当不传其他选择方式时才使用
         @param {str} name=None - 按名字完全匹配选择
@@ -444,7 +457,7 @@ class WindowsChromeAction(BaseAction):
         return _fit_tab
 
     @classmethod
-    def chrome_close_tab(cls, robot_info: dict, action_name: str,
+    def chrome_close_tab(cls, robot_info: dict, action_name: str, run_id: str,
                          chrome_tab: winuia.WindowControlSpec = None,
                          chrome_win: winuia.WindowControlSpec = None,
                          index: int = 0, name: str = None, name_with: str = None,
@@ -454,6 +467,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_tab=None - 直接指定要关闭的页签，如果不传可以通过以下条件找到页签再关闭
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口，当需要以下参数进行页签选择时使用
         @param {int} index=0 - 按位置选择，当不传其他选择方式时才使用
@@ -491,7 +505,7 @@ class WindowsChromeAction(BaseAction):
                 _close_btn[0].automation_control.Click()
 
     @classmethod
-    def chrome_new_tab(cls, robot_info: dict, action_name: str,
+    def chrome_new_tab(cls, robot_info: dict, action_name: str, run_id: str,
                        chrome_win: winuia.WindowControlSpec,
                        **kwargs) -> winuia.WindowControlSpec:
         """
@@ -499,6 +513,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
 
         @returns {WindowControlSpec} - 新增的页签对象
@@ -520,7 +535,7 @@ class WindowsChromeAction(BaseAction):
     # 右键菜单操作
     #############################
     @classmethod
-    def chrome_click_pop_menu(cls, robot_info: dict, action_name: str,
+    def chrome_click_pop_menu(cls, robot_info: dict, action_name: str, run_id: str,
                               chrome_win: winuia.WindowControlSpec, menu_names: list,
                               **kwargs):
         """
@@ -528,6 +543,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
         @param {list} menu_names - 菜单查找名称路径, 从数组的第1开始逐步弹出子菜单
             [
@@ -567,7 +583,7 @@ class WindowsChromeAction(BaseAction):
     # 网页内容操作
     #############################
     @classmethod
-    def chrome_get_page_doc(cls, robot_info: dict, action_name: str,
+    def chrome_get_page_doc(cls, robot_info: dict, action_name: str, run_id: str,
                             chrome_win: winuia.WindowControlSpec,
                             **kwargs) -> winuia.WindowControlSpec:
         """
@@ -575,6 +591,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
 
         @returns {WindowControlSpec} - 网页文档对象
@@ -594,7 +611,7 @@ class WindowsChromeAction(BaseAction):
     # DevTool操作
     #############################
     @classmethod
-    def chrome_is_devtool_opened(cls, robot_info: dict, action_name: str,
+    def chrome_is_devtool_opened(cls, robot_info: dict, action_name: str, run_id: str,
                                  chrome_win: winuia.WindowControlSpec,
                                  **kwargs) -> bool:
         """
@@ -602,6 +619,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
 
         @returns {bool} - 指示DevTool是否打开
@@ -616,7 +634,7 @@ class WindowsChromeAction(BaseAction):
         return True
 
     @classmethod
-    def chrome_open_devtool(cls, robot_info: dict, action_name: str,
+    def chrome_open_devtool(cls, robot_info: dict, action_name: str, run_id: str,
                             chrome_win: winuia.WindowControlSpec,
                             **kwargs):
         """
@@ -624,6 +642,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
         """
         if not cls.chrome_is_devtool_opened(
@@ -638,7 +657,7 @@ class WindowsChromeAction(BaseAction):
             )
 
     @classmethod
-    def chrome_close_devtool(cls, robot_info: dict, action_name: str,
+    def chrome_close_devtool(cls, robot_info: dict, action_name: str, run_id: str,
                              chrome_win: winuia.WindowControlSpec,
                              **kwargs):
         """
@@ -646,6 +665,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
         """
         if cls.chrome_is_devtool_opened(
@@ -655,7 +675,7 @@ class WindowsChromeAction(BaseAction):
             winuia.Keyboard.hotkey('ctrl', 'shift', 'i')
 
     @classmethod
-    def chrome_get_dom_html(cls, robot_info: dict, action_name: str,
+    def chrome_get_dom_html(cls, robot_info: dict, action_name: str, run_id: str,
                             chrome_win: winuia.WindowControlSpec,
                             check_complete: dict = None, check_overtime: float = 10.0,
                             **kwargs) -> str:
@@ -664,6 +684,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
         @param {dict} check_complete = None - 检查是否已完成的调整，格式如下
             'name' {str} - 标签名，例如div
@@ -738,7 +759,7 @@ class WindowsChromeAction(BaseAction):
     # 扩展插件操作
     #############################
     @classmethod
-    def chrome_get_extension(cls, robot_info: dict, action_name: str,
+    def chrome_get_extension(cls, robot_info: dict, action_name: str, run_id: str,
                              chrome_win: winuia.WindowControlSpec,
                              group_name: str = '扩展程序',
                              index: int = 0, name_with: str = None,
@@ -748,6 +769,7 @@ class WindowsChromeAction(BaseAction):
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {WindowControlSpec} chrome_win - Chrome浏览器窗口
         @param {str} group_name='扩展程序' - 获取扩展程序分组的窗口名，如果是其他语言需要修改传入
         @param {int} index=0 - 按位置获取，当name_with为None时使用

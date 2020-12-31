@@ -52,9 +52,9 @@ WINDOWS_ATTR_ROUTER = {
     'WINDOW_ATTR_IS_MAXIMIZED': ['is_maximized', winuia.WindowControlSpec.is_maximized],
     'WINDOW_ATTR_PARENT': ['parent', winuia.WindowControlSpec.parent],
     'WINDOW_ATTR_WIN_RECT': ['win_rect', winuia.WindowControlSpec.win_rect],
-    'WINDOW_ATTR_V_SCROLL_RANGE': ['v_scroll_range', winuia.WindowControlSpec.v_scroll_range],
+    'WINDOW_ATTR_V_SCROLL_VIEWSIZE': ['v_scroll_viewsize', winuia.WindowControlSpec.v_scroll_viewsize],
     'WINDOW_ATTR_V_SCROLL_POS': ['v_scroll_pos', winuia.WindowControlSpec.v_scroll_pos],
-    'WINDOW_ATTR_H_SCROLL_RANGE': ['h_scroll_range', winuia.WindowControlSpec.h_scroll_range],
+    'WINDOW_ATTR_H_SCROLL_VIEWSIZE': ['h_scroll_viewsize', winuia.WindowControlSpec.h_scroll_viewsize],
     'WINDOW_ATTR_H_SCROLL_POS': ['h_scroll_pos', winuia.WindowControlSpec.h_scroll_pos],
 
     # 实例对象函数
@@ -119,15 +119,15 @@ class WindowsAction(BaseAction):
         return {'Windows': None}
 
     #############################
-    # 常用函数通用映射
+    # 静态函数通用映射
     #############################
     @classmethod
     def get_common_fun_dict(cls):
         """
-        获取常用函数通用映射字典
+        获取静态函数通用映射字典
         (如果需要实现映射，请继承并修改该函数的返回值)
 
-        @returns {dict} - 返回常用函数通用映射字典
+        @returns {dict} - 返回静态函数通用映射字典
             key - 动作名(action_name), 必须为大写
             value - 动作对应的执行函数对象
         """
@@ -199,6 +199,3 @@ if __name__ == '__main__':
            '作者：%s\n'
            '发布日期：%s\n'
            '版本：%s' % (__MOUDLE__, __DESCRIPT__, __AUTHOR__, __PUBLISH__, __VERSION__)))
-
-    a = WindowsAction.get_action_router()
-    print(1)

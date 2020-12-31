@@ -14,6 +14,7 @@
 
 import os
 import sys
+import json
 # 根据当前文件路径将包路径纳入，在非安装的情况下可以引用到
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)))
@@ -25,6 +26,23 @@ __DESCRIPT__ = u'动作模块基础框架'  # 模块描述
 __VERSION__ = '0.1.0'  # 版本
 __AUTHOR__ = u'黎慧剑'  # 作者
 __PUBLISH__ = '2020.05.21'  # 发布日期
+
+
+class ActionRouterJsonEncoder(json.JSONEncoder):
+    """
+    动作路由字典的Json转换类
+    """
+
+    def default(self, o):
+        """
+        重载转换器，遇到转换异常直接用str方式处理
+        """
+        try:
+            _encode = json.JSONEncoder.default(self, o)
+        except:
+            _encode = str(o)
+
+        return _encode
 
 
 class BaseAction(object):
@@ -46,7 +64,7 @@ class BaseAction(object):
             ['*'] - 代表支持所有分类
             ['win32', 'winuia'] - 代表支持win32和winuia两种分类使用
         """
-        raise NotImplementedError()
+        return ['*']
 
     @classmethod
     def support_platform(cls) -> dict:
@@ -71,6 +89,8 @@ class BaseAction(object):
                 'Action_Name': {
                     'fun': fun_object,
                     'platform': {'system': (ver1, ver2, ...)},
+                    'instance_class': '',
+                    'is_control': False,
                     'name': '动作名',
                     'desc': '动作描述',
                     'param': [
@@ -82,49 +102,71 @@ class BaseAction(object):
                 ...
             }
         """
-        # 类自身函数
+        # 类自身函数生成动作路由字典
         _action_router = ActionCodeTool.get_action_router_by_class(
             cls, platform=cls.support_platform()
         )
 
-        # 函数映射字典
+        # 通过函数映射生成的动作路由字典
         _temp_router = ActionCodeTool.get_action_router_by_fun_dict(
             cls.get_common_fun_dict(), call_fun_obj=cls.common_fun,
-            platform=cls.support_platform()
+            platform=cls.support_platform(), is_control=cls.is_control_actions()
         )
         _action_router.update(_temp_router)
 
         # 实例对象属性及函数映射字典
         _temp_router = ActionCodeTool.get_action_router_by_attr_dict(
             cls.get_common_attr_dict(), call_fun_obj=cls.common_attr_call,
-            platform=cls.support_platform()
+            platform=cls.support_platform(), is_control=cls.is_control_actions()
         )
         _action_router.update(_temp_router)
 
         return _action_router
 
+    @classmethod
+    def print_action_router(cls) -> str:
+        """
+        打印动作函数路由表为格式化的JSON串
+
+        @returns {str} - 格式化后的JSON串
+        """
+        return json.dumps(
+            cls.get_action_router(), ensure_ascii=False,
+            cls=ActionRouterJsonEncoder, indent=4
+        )
+
+    @classmethod
+    def is_control_actions(cls) -> bool:
+        """
+        指示该模块是否控制动作
+
+        @returns {bool} - 是否控制动作
+        """
+        return False
+
     #############################
-    # 常用函数通用映射
+    # 静态函数通用映射
     #############################
     @classmethod
     def get_common_fun_dict(cls):
         """
-        获取常用函数通用映射字典
+        获取静态函数通用映射字典
         (如果需要实现映射，请继承并修改该函数的返回值)
 
-        @returns {dict} - 返回常用函数通用映射字典
+        @returns {dict} - 返回静态函数通用映射字典
             key - 动作名(action_name), 必须为大写
             value - 动作对应的执行函数对象
         """
         return {}
 
     @classmethod
-    def common_fun(cls, robot_info: dict, action_name: str, *args, **kwargs):
+    def common_fun(cls, robot_info: dict, action_name: str, run_id: str, *args, **kwargs):
         """
         通用调用函数
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         """
         _action_name = action_name.upper()
         _fun_dict = cls.get_common_fun_dict()
@@ -149,13 +191,15 @@ class BaseAction(object):
         return {}
 
     @classmethod
-    def common_attr_call(cls, robot_info: dict, action_name: str, instance_obj: object, *args, **kwargs):
+    def common_attr_call(cls, robot_info: dict, action_name: str, run_id: str, instance_obj: object,
+                         *args, **kwargs):
         """
         通用实例对象内部方法及属性执行函数
-        注：不支持通过该方法设置属性值
+        注：如果要设置属性值，请在 args 第一个参数传入要设置的值
 
         @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
         @param {str} action_name - 通用参数，调用时默认传入的动作名
+        @param {str} run_id - 运行id
         @param {object} instance_obj - 要执行的实例对象
         """
         _action_name = action_name.upper()
@@ -171,8 +215,12 @@ class BaseAction(object):
             # 执行函数
             return _attr(*args, **kwargs)
         else:
-            # 直接返回属性值
-            return _attr
+            # 处理属性值
+            if len(args) > 0:
+                _attr = args[0]
+            else:
+                # 直接返回属性值
+                return _attr
 
 
 if __name__ == '__main__':
