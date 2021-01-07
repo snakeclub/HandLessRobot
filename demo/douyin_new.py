@@ -51,8 +51,8 @@ def test():
         'platformName': 'Android',  # 被测手机是安卓
         # 'platformVersion': '9',  # 模拟器安卓版本
         # 'deviceName': 'WGY0217527000271',  # 设备名，安卓手机可以随意填写
-        'platformVersion': '7.1',  # 模拟器安卓版本
-        'deviceName': '127.0.0.1:21503',  # 设备名，安卓手机可以随意填写
+        'platformVersion': '6.0',  # 模拟器安卓版本
+        'deviceName': 'C6Y9KJYPSSTC7L8L',  # 设备名，安卓手机可以随意填写
         "appPackage": "com.ss.android.ugc.aweme",
         "appActivity": ".splash.SplashActivity",  # 首页
         'unicodeKeyboard': True,  # 使用自带输入法，输入中文时填True
@@ -74,8 +74,8 @@ def test():
     print('appium.size: ', _app.size)
     print('adb.size: ', _app.size_adb)
 
-    print('appium.current_activity: ', _app.current_activity)
-    print('adb.current_activity: ', _app.current_activity_adb)
+    print('appium.current_activity: ', _app.current_activity)   #
+    print('adb.current_activity: ', _app.current_activity_adb)  # .live.LivePlayActivity
 
     _page_source = _app.page_source
     with open(os.path.join(TEMP_PATH, 'appium.xml'), 'w', encoding='utf-8') as _f:

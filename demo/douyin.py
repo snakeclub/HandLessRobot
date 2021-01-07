@@ -50,7 +50,7 @@ DESIRED_CAPS_SIMULATOR = {
     'platformVersion': '7.1',  # 模拟器安卓版本
     'deviceName': '127.0.0.1:21513',  # 设备名，安卓手机可以随意填写
     "appPackage": "com.ss.android.ugc.aweme",
-    "appActivity": ".search.activity.SearchResultActivity",
+    "appActivity": ".search.activity.SearchResultActivity",    # .detail.ui.LiveDetailActivity
     'unicodeKeyboard': True,  # 使用自带输入法，输入中文时填True
     'resetKeyboard': True,  # 执行完程序恢复原来输入法
     'noReset': True,       # 不要重置App，防止登录信息丢失

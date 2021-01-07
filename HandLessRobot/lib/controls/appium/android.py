@@ -113,7 +113,7 @@ class AppDevice(appium_control.AppDevice):
         # mFocusedActivity: ActivityRecord{e903df8 u0 com.ss.android.ugc.aweme/.splash.SplashActivity t172}
         _findstr = 'ActivityRecord{'
         _temp = _cmd_info[0][_cmd_info[0].find(_findstr) + len(_findstr):].split(' ')
-        _activity = _temp[2][_temp[2].find('/') + 1:]
+        _activity = _temp[2][_temp[2].find('/') + 1:].rstrip(',')
 
         return _activity
 
@@ -166,7 +166,77 @@ class AppDevice(appium_control.AppDevice):
     #############################
     # 动作 - 输入
     #############################
-    def adb_keyboard_set_default_ime(self):
+    def adb_keycode(self, key_code, *args):
+        """
+        通过adb方式输入按钮
+
+        @param {int|str} key_code - 要按下的按键代码，支持传入int、EnumAndroidKeycode和str三种格式
+            注：传入的str格式字符串必须与 EnumAndroidKeycode 定义的名称一致
+        @param {args} - 如果需要同时按多个按键，则传入多个值
+        """
+        _key_code = key_code
+        if type(key_code) == str:
+            # 通过字符串获取key值
+            _key_code = eval('EnumAndroidKeycode.%s' % key_code.upper()).value
+        elif type(key_code) == EnumAndroidKeycode:
+            _key_code = key_code.value
+
+        if len(args) == 0:
+            # 只发送一个按键
+            _cmd = '%s -s %s shell input keyevent %s' % (
+                self.adb_name, self._desired_caps['deviceName'], str(_key_code)
+            )
+        else:
+            # 发送多个按键
+            _key_list = [str(_key_code), ]
+            for _key in args:
+                if type(_key) == str:
+                    # 通过字符串获取key值
+                    _key = eval('EnumAndroidKeycode.%s' % _key.upper()).value
+                elif type(_key) == EnumAndroidKeycode:
+                    _key = _key.value
+
+                _key_list.append(str(_key))
+
+            _cmd = '%s -s %s shell input keyevent %s' % (
+                self.adb_name, self._desired_caps['deviceName'], ' '.join(_key_list)
+            )
+
+        # 执行发送
+        _code, _cmd_info = self._exec_sys_cmd(_cmd)
+        if _code != 0:
+            raise RuntimeError('exec cmd [%s] error[%d]: %s' % (_cmd, _code, '\n'.join(_cmd_info)))
+
+    def adb_get_default_ime(self) -> str:
+        """
+        获取手机当前默认输入法
+
+        @returns {str} - 输入法
+        """
+        _cmd = '%s -s %s shell settings get secure default_input_method' % (
+            self.adb_name, self._desired_caps['deviceName']
+        )
+        _code, _cmd_info = self._exec_sys_cmd(_cmd)
+        if _code != 0 and _cmd_info[0].startswith('Error'):
+            raise RuntimeError('exec cmd [%s] error[%d]: %s' % (_cmd, _code, '\n'.join(_cmd_info)))
+
+        # 返回输入法
+        return _cmd_info[0]
+
+    def adb_set_default_ime(self, ime):
+        """
+        设置输入法
+
+        @param {str} ime - 要设置的输入法
+        """
+        _cmd = '%s -s %s shell ime set %s' % (
+            self.adb_name, self._desired_caps['deviceName'], ime
+        )
+        _code, _cmd_info = self._exec_sys_cmd(_cmd)
+        if _code != 0 and not _cmd_info[0].startswith('Input method'):
+            raise RuntimeError('exec cmd [%s] error[%d]: %s' % (_cmd, _code, '\n'.join(_cmd_info)))
+
+    def adb_set_first_ime(self):
         """
         设置手机的输入法为输入法列表的第一个输入法
         """
@@ -181,14 +251,9 @@ class AppDevice(appium_control.AppDevice):
         _ime = _cmd_info[0][0: -1]  # 去掉最后一个分号
 
         # 切换输入法
-        _cmd = '%s -s %s shell ime set %s' % (
-            self.adb_name, self._desired_caps['deviceName'], _ime
-        )
-        _code, _cmd_info = self._exec_sys_cmd(_cmd)
-        if _code != 0 and not _cmd_info[0].startswith('Input method'):
-            raise RuntimeError('exec cmd [%s] error[%d]: %s' % (_cmd, _code, '\n'.join(_cmd_info)))
+        self.adb_keyboard_set_ime(_ime)
 
-    def adb_keyboard_set_adbime(self):
+    def adb_set_adbime(self):
         """
         设置 ADBKeyBoard 为默认输入法
         (不支持Appium自带的send_keys)
@@ -200,7 +265,7 @@ class AppDevice(appium_control.AppDevice):
         if _code != 0 and not _cmd_info[0].startswith('Input method'):
             raise RuntimeError('exec cmd [%s] error[%d]: %s' % (_cmd, _code, '\n'.join(_cmd_info)))
 
-    def adb_keyboard_set_appium_ime(self):
+    def adb_set_appium_ime(self):
         """
         设置 Appium UnicodeIME 为默认输入法
         (支持Appium自带的send_keys)
@@ -292,6 +357,7 @@ class AppDevice(appium_control.AppDevice):
     #############################
     # 动作 - 点击
     #############################
+
     def tap_adb(self, x: int = None, y: int = None, count: int = 1, **kwargs):
         """
         点击指定位置
