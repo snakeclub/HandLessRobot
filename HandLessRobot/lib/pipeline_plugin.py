@@ -454,7 +454,9 @@ class RobotActionControl(PipelineProcesser):
                     _control_config['condition'], **_formula_kwargs).formula_value
             )
 
-            run_action = None  # 加这行是为了变量不被释放
+            # 加这行是为了变量不被释放
+            if run_action:
+                pass
 
             if _condition:
                 # 执行当前节点的下一个节点

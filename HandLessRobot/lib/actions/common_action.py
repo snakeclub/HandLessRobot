@@ -17,7 +17,6 @@ import sys
 import time
 import random
 import datetime
-import time
 from HiveNetLib.base_tools.run_tool import RunTool
 # 根据当前文件路径将包路径纳入，在非安装的情况下可以引用到
 sys.path.append(os.path.abspath(os.path.join(
@@ -241,54 +240,6 @@ class CommonAction(BaseAction):
         @param {float} interval - 要设置的等待时长
         """
         RunTool.set_global_var('COMMON_ACTION_TIME_WAIT', interval)
-
-    @classmethod
-    def wait_command(cls, robot_info: dict, action_name: str, run_id: str, cmd_router: dict, over_time: int = 0,
-                     over_time_step_id: str = None, sleep_time: int = 500, **kwargs):
-        """
-        等待执行命令
-        注：通过查询机器人运行变量(run_variable)的'{$WAIT_COMMAND$}'变量获取命令，不支持多个命令传入
-
-        @param {dict} robot_info - 通用参数，调用时默认传入的机器人信息
-        @param {str} action_name - 通用参数，调用时默认传入的动作名
-        @param {str} run_id - 运行id
-        @param {dict} cmd_router - 获取到命令后的路由配置字典
-            key为要匹配的命令字符串（区分大小写），value为匹配上后跳转到的step_id
-        @param {int} over_time=0 - 等待命令的超时时间，单位为秒
-        @param {str} over_time_step_id=None - 当执行超时时跳转到的步骤id，如果为None则按照正常节点完成方式执行下一个节点
-        @param {int} sleep_time=500 - 间隔轮询命令的睡眠时间，单位为毫秒
-
-        @throws {KeyError} - 当获取到的命令不支持时抛出异常
-        """
-        # 一开始先删除{$WAIT_COMMAND$}变量，避免历史数据的干扰
-        _var_name = '{$WAIT_COMMAND$}'
-        if run_id in robot_info['vars'].keys():
-            robot_info['vars'][run_id].pop(_var_name)
-
-        # 循环遍历
-        _start = datetime.datetime.now()
-        while True:
-            if run_id in robot_info['vars'].keys():
-                _cmd = robot_info['vars'][run_id].pop(_var_name, None)
-                if _cmd is not None:
-                    # 找到命令
-                    if _cmd not in cmd_router.keys():
-                        raise KeyError('Not support cmd [%s]!' % _cmd)
-
-                    # 设置跳转参数
-                    return
-
-            # 未获取到命令，检查是否超时
-            if over_time > 0 and (datetime.datetime.now() - _start).total_seconds() > over_time:
-                if over_time_step_id not None:
-                    # 跳转到超时指定步骤
-                    pass
-
-                # 跳出循环
-                return
-
-            # 休眠一段时间，继续尝试获取
-            time.sleep(sleep_time)
 
 
 if __name__ == '__main__':

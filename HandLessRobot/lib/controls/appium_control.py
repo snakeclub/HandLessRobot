@@ -1504,7 +1504,7 @@ class AppDevice(object):
 
         @returns {(int, list)} - 返回命令执行结果数组, 第一个为 exit_code, 0代表成功; 第二个为输出信息行数组
         """
-        _shell_encoding = shell_encoding if shell_encoding is not None else self.shell_encoding
+        _shell_encoding = self.para['shell_encoding'] if shell_encoding is None else shell_encoding
         _sp = subprocess.Popen(
             cmd, close_fds=True,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -1513,27 +1513,28 @@ class AppDevice(object):
 
         # 循环等待执行完成
         _exit_code = None
-        _info = list()  # 数据出信息的行数组
+        _info_str = ''
         while True:
-            # 获取输出信息
-            _info.append(_sp.stdout.readline().decode(
-                _shell_encoding).replace('\r', '').replace('\n', ''))
+            # 获取输出信息 .replace('\r', '').replace('\n', '')
+            _info_str += _sp.stdout.readline().decode(
+                _shell_encoding
+            ).replace('\r', '\n').replace('\n\n', '\n')
 
             _exit_code = _sp.poll()
             if _exit_code is not None:
                 # 结束，打印异常日志
-                _info.append(_sp.stdout.read().decode(
-                    _shell_encoding).replace('\r', '').replace('\n', ''))
+                _info_str += _sp.stdout.read().decode(
+                    _shell_encoding).replace('\r', '\n').replace('\n\n', '\n')
                 if _exit_code != 0:
-                    _info.append(_sp.stdout.read().decode(
-                        _shell_encoding).replace('\r', '').replace('\n', ''))
+                    _info_str += _sp.stdout.read().decode(
+                        _shell_encoding).replace('\r', '\n').replace('\n\n', '\n')
 
                 break
 
             # 释放一下CPU
-            time.sleep(0.001)
+            time.sleep(0.01)
 
-        return (_exit_code, _info)
+        return (_exit_code, _info_str.split('\n'))
 
 
 if __name__ == '__main__':
@@ -1544,33 +1545,36 @@ if __name__ == '__main__':
            '发布日期：%s\n'
            '版本：%s' % (__MOUDLE__, __DESCRIPT__, __AUTHOR__, __PUBLISH__, __VERSION__)))
 
-    desired_caps = {
-        'platformName': 'Android',  # 被测手机是安卓
-        'platformVersion': '7.1',  # 模拟器安卓版本
-        'deviceName': '127.0.0.1:21513',  # 设备名，安卓手机可以随意填写
-        'appPackage': 'com.android.browser',  # 启动APP Package名称
-        'appActivity': '.BrowserActivity',  # 启动Activity名称
-        # 'unicodeKeyboard': True,  # 使用自带输入法，输入中文时填True
-        # 'resetKeyboard': True,  # 执行完程序恢复原来输入法
-        'noReset': True,       # 不要重置App，防止登录信息丢失
-        # 'newCommandTimeout': 6000,
-        # 'automationName': 'UiAutomator2'
-    }
-    driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
-    driver.implicitly_wait(5)  # 设置隐式等待的时长（查找元素的时间）
-    action = TouchAction(driver)
-    el_url = driver.find_element_by_id("com.android.browser:id/url")
-    el_url.clear()
-    el_url.click()
-    el_url.send_keys("www.baidu.com")
-    driver.press_keycode(66)  # 回车
-    time.sleep(5)
-    size = driver.get_window_size()
-    x1 = int(size['width'] * 0.5)
-    y1 = int(size['height'] * 0.9)
-    y2 = int(size['height'] * 0.1)
-    driver.swipe(x1, y1, x1, y2, 500)
+    # desired_caps = {
+    #     'platformName': 'Android',  # 被测手机是安卓
+    #     'platformVersion': '7.1',  # 模拟器安卓版本
+    #     'deviceName': '127.0.0.1:21513',  # 设备名，安卓手机可以随意填写
+    #     'appPackage': 'com.android.browser',  # 启动APP Package名称
+    #     'appActivity': '.BrowserActivity',  # 启动Activity名称
+    #     # 'unicodeKeyboard': True,  # 使用自带输入法，输入中文时填True
+    #     # 'resetKeyboard': True,  # 执行完程序恢复原来输入法
+    #     'noReset': True,       # 不要重置App，防止登录信息丢失
+    #     # 'newCommandTimeout': 6000,
+    #     # 'automationName': 'UiAutomator2'
+    # }
+    # driver = webdriver.Remote('http://localhost:4723/wd/hub', desired_caps)
+    # driver.implicitly_wait(5)  # 设置隐式等待的时长（查找元素的时间）
+    # action = TouchAction(driver)
+    # el_url = driver.find_element_by_id("com.android.browser:id/url")
+    # el_url.clear()
+    # el_url.click()
+    # el_url.send_keys("www.baidu.com")
+    # driver.press_keycode(66)  # 回车
+    # time.sleep(5)
+    # size = driver.get_window_size()
+    # x1 = int(size['width'] * 0.5)
+    # y1 = int(size['height'] * 0.9)
+    # y2 = int(size['height'] * 0.1)
+    # driver.swipe(x1, y1, x1, y2, 500)
 
-    # action.press(x=422, y=642).move_to(x=493, y=261).release().perform()  # 向上滑动
-    time.sleep(5)
-    driver.quit()
+    # # action.press(x=422, y=642).move_to(x=493, y=261).release().perform()  # 向上滑动
+    # time.sleep(5)
+    # driver.quit()
+
+    a = [1, 2, 3]
+    print(a[-2])

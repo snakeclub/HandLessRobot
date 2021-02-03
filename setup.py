@@ -21,7 +21,7 @@ SHORT_DESCRIPTION = """
 A framework using machine instead of manual operation.""".strip()
 
 DEPENDENCIES = [
-    'HiveNetLib>=0.7.5',
+    'HiveNetLib>=0.8.6',
     'pyautogui',
     'pywin32',
     'psutil',
@@ -36,7 +36,7 @@ DEPENDENCIES = [
 
 TEST_DEPENDENCIES = []
 
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 URL = 'https://github.com/snakeclub/HandLessRobot'
 
 setup(

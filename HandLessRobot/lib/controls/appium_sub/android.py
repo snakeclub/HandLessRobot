@@ -251,7 +251,7 @@ class AppDevice(appium_control.AppDevice):
         _ime = _cmd_info[0][0: -1]  # 去掉最后一个分号
 
         # 切换输入法
-        self.adb_keyboard_set_ime(_ime)
+        self.adb_set_default_ime(_ime)
 
     def adb_set_adbime(self):
         """
